@@ -2,7 +2,6 @@
 
 var Stream = require('stream');
 var gutil = require('gulp-util');
-var _ = require('lodash');
 
 var PLUGIN_NAME = 'gulp-cordova-app-loader-manifest';
 
@@ -20,11 +19,14 @@ var calManifest = function calManifest(options) {
 
     var manifest = {
         files: {},
-        load: _.clone(options.load),
+        load: options.load.slice(),
         root: options.root || './'
     };
 
     var stream = new Stream.Transform({objectMode: true});
+
+    // this is for an alternative(to looping) faster way to search for a filename
+    var stringOfLoadFileNames = options.load.join(' ');
 
     stream._transform = function (file, unused, done) {
         if (file.isNull() || !file.stat.isFile()) {
@@ -43,13 +45,16 @@ var calManifest = function calManifest(options) {
             filename: filename,
             version: hasher.update(file.contents).digest('hex')
         };
-        var i, pattern;
-        for (i = 0; i < options.load.length; i++) {
-            pattern = options.load[i];
-            if (pattern.indexOf(filename) > -1) {
-                manifest.load.push(pattern.split(options.prefixSplit).pop())
-            }
-        }
+
+	if(stringOfLoadFileNames.indexOf(filename) > -1){
+	    manifest.load = manifest.load.reduce(function(accumulatedListOfFileNames,currentFileName){
+		if(currentFileName.indexOf(filename) > -1){
+	            currentFileName = currentFileName.split(options.prefixSplit).pop()
+		}
+		accumulatedListOfFileNames.push(currentFileName)
+		return accumulatedListOfFileNames;
+	    },[])
+	}
 
         done();
     };
