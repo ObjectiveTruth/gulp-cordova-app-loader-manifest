@@ -39,7 +39,7 @@ var calManifest = function calManifest(options) {
         }
 
         var hasher = require('crypto').createHash('sha256');
-        var filename = encodeURI(file.relative);
+        var filename = encodeURI(file.relative.replace(/\\/g , "/")); //for windwos, change backslash to forwardslash first only then encode
         var key = filename.replace(/\//g, '_');
         manifest.files[key] = {
             filename: filename,
