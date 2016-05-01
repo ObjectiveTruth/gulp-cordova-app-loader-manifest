@@ -23,12 +23,12 @@ var calManifest = function calManifest(options) {
         root: options.root || './'
     };
 
-    var stream = new Stream.Transform({objectMode: true});
+    var stream = new Stream.Transform({ objectMode: true });
 
     // this is for an alternative(to looping) faster way to search for a filename
     var stringOfLoadFileNames = options.load.join(' ');
 
-    stream._transform = function (file, unused, done) {
+    stream._transform = function(file, unused, done) {
         if (file.isNull() || !file.stat.isFile()) {
             return done();
         }
@@ -39,27 +39,17 @@ var calManifest = function calManifest(options) {
         }
 
         var hasher = require('crypto').createHash('sha256');
-        var filename = encodeURI(file.relative.replace(/\\/g , "/")); //for windwos, change backslash to forwardslash first only then encode
+        var filename = encodeURI(file.relative.replace(/\\/g, "/")); //for windows, change backslash to forwardslash first only then encode
         var key = filename.replace(/\//g, '_');
         manifest.files[key] = {
             filename: filename,
             version: hasher.update(file.contents).digest('hex')
         };
 
-	if(stringOfLoadFileNames.indexOf(filename) > -1){
-	    manifest.load = manifest.load.reduce(function(accumulatedListOfFileNames,currentFileName){
-		if(currentFileName.indexOf(filename) > -1){
-	            currentFileName = currentFileName.split(options.prefixSplit).pop()
-		}
-		accumulatedListOfFileNames.push(currentFileName)
-		return accumulatedListOfFileNames;
-	    },[])
-	}
-
         done();
     };
 
-    stream._flush = function (done) {
+    stream._flush = function(done) {
         var file = new gutil.File({
             path: 'manifest.json',
             contents: new Buffer(JSON.stringify(manifest, null, 4))
