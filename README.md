@@ -33,6 +33,18 @@ There are 2 ways depending on your needs
 var calManifest = require('gulp-cordova-app-loader-manifest');
 
 gulp.task('manifest', function() {
+
+    var options = {};
+    
+    options.load = [
+        "js/app.js",
+        "js/controllers.js",
+        "js/services.js",
+        "js/templates.js"
+    ];
+
+    options.hashAlgo = 'sha1';
+
   return gulp.src('./www/**')
     .pipe(calManifest(options))
     .pipe(gulp.dest('./'));
@@ -71,3 +83,11 @@ manifest.load = [
   'css/style.css'
 ]
 ```
+
+#### hashAlgo
+```javascript
+options.hashAlgo = 'sha1'
+```
+Specifies the algorithm used for create the version string for the files.
+
+Availble options are algorithms supported by the version of OpenSSL on the platform. Examples are 'sha256', 'sha512', etc. On recent releases of OpenSSL, `openssl list-message-digest-algorithms` will display the available digest algorithms.
