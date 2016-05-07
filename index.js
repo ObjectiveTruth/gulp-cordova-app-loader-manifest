@@ -16,6 +16,10 @@ var calManifest = function calManifest(options) {
     } else if (!(options.load instanceof Array)) {
         options.load = [options.load];
     }
+    
+    if (!options.hashAlgo) {
+        options.hasAlgo = 'sha256';
+    }
 
     var manifest = {
         files: {},
@@ -38,7 +42,7 @@ var calManifest = function calManifest(options) {
             return done();
         }
 
-        var hasher = require('crypto').createHash('sha256');
+        var hasher = require('crypto').createHash(options.hashAlgo);
         var filename = encodeURI(file.relative.replace(/\\/g, "/")); //for windows, change backslash to forwardslash first only then encode
         var key = filename.replace(/\//g, '_');
         manifest.files[key] = {
