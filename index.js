@@ -18,7 +18,7 @@ var calManifest = function calManifest(options) {
     }
     
     if (!options.hashAlgo) {
-        options.hasAlgo = 'sha256';
+        options.hashAlgo = 'sha256';
     }
 
     var manifest = {
