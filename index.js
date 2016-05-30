@@ -24,8 +24,8 @@ var calManifest = function calManifest(options) {
     var manifest = {
         files: {},
         load: options.load.slice(),
-        root: options.root || './'
-        timestamp: new Date().getTime();
+        root: options.root || './',
+        timestamp: new Date().getTime()
     };
 
     var stream = new Stream.Transform({ objectMode: true });
