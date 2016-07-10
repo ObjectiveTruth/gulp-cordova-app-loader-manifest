@@ -16,19 +16,24 @@ var calManifest = function calManifest(options) {
     } else if (!(options.load instanceof Array)) {
         options.load = [options.load];
     }
+    
+    if (!options.hashAlgo) {
+        options.hashAlgo = 'sha256';
+    }
 
     var manifest = {
         files: {},
         load: options.load.slice(),
-        root: options.root || './'
+        root: options.root || './',
+        timestamp: new Date().getTime()
     };
 
-    var stream = new Stream.Transform({objectMode: true});
+    var stream = new Stream.Transform({ objectMode: true });
 
     // this is for an alternative(to looping) faster way to search for a filename
     var stringOfLoadFileNames = options.load.join(' ');
 
-    stream._transform = function (file, unused, done) {
+    stream._transform = function(file, unused, done) {
         if (file.isNull() || !file.stat.isFile()) {
             return done();
         }
@@ -38,28 +43,18 @@ var calManifest = function calManifest(options) {
             return done();
         }
 
-        var hasher = require('crypto').createHash('sha256');
-        var filename = encodeURI(file.relative);
+        var hasher = require('crypto').createHash(options.hashAlgo);
+        var filename = encodeURI(file.relative.replace(/\\/g, "/")); //for windows, change backslash to forwardslash first only then encode
         var key = filename.replace(/\//g, '_');
         manifest.files[key] = {
             filename: filename,
             version: hasher.update(file.contents).digest('hex')
         };
 
-	if(stringOfLoadFileNames.indexOf(filename) > -1){
-	    manifest.load = manifest.load.reduce(function(accumulatedListOfFileNames,currentFileName){
-		if(currentFileName.indexOf(filename) > -1){
-	            currentFileName = currentFileName.split(options.prefixSplit).pop()
-		}
-		accumulatedListOfFileNames.push(currentFileName)
-		return accumulatedListOfFileNames;
-	    },[])
-	}
-
         done();
     };
 
-    stream._flush = function (done) {
+    stream._flush = function(done) {
         var file = new gutil.File({
             path: 'manifest.json',
             contents: new Buffer(JSON.stringify(manifest, null, 4))
